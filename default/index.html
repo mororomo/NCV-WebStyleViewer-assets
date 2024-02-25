@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NCV WebStyleViewr</title>
+<style>
+    #indicator {
+        background-color: #727272;
+        border: none;
+        border-radius: 4px;
+        bottom: 8px;
+        cursor: pointer;
+        display: block;
+        filter: drop-shadow(0 0 3px rgba(0,0,0,.3));
+        height: 32px;
+        left: 50%;
+        opacity: .7;
+        outline: none;
+        padding: 0;
+        position: fixed;
+        transition: opacity .2s ease;
+        width: 32px;
+        will-change: opacity,bottom;
+    }
+    #indicator:hover {
+        opacity: 1;
+    }
+    #indicator:before {
+        background-color: #f4f4f4;
+        content: "";
+        display: inline-block;
+        height: 32px;
+        -webkit-mask-image: url(./img/down_button.svg);
+        -webkit-mask-position: center;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-size: contain;
+        pointer-events: none;
+        width: 32px;
+    }
+</style>
+</head>
+<body>
+<div id="comment-panel"></div>
+<script type="text/javascript">
+function scrollBottom() {
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+function isDownButton() {
+  return document.getElementById("indicator") !== null;
+}
+
+const panel = document.getElementById('comment-panel');
+const mo = new MutationObserver(function() {
+  if (!isDownButton()) {
+    scrollBottom();
+  }
+  const lastComment = panel.lastElementChild;
+  if (lastComment.dataset.anonymity === "1") {
+    let elm = document.createElement('span');
+    elm.textContent = "※匿名※";
+    lastComment.appendChild(elm);
+  }
+  if (lastComment.dataset.premium === "1") {
+    let elm = document.createElement('span');
+    elm.textContent = "P";
+    lastComment.appendChild(elm);
+  }
+});
+mo.observe(panel, { childList: true });
+
+const btn = document.createElement('button');
+btn.id = "indicator";
+btn.type = "button";
+btn.ariaLabel = "最新コメントに戻る";
+btn.onclick = scrollBottom;
+
+function downButtonState() {
+  const lastComment = panel.lastElementChild;
+  const rect = lastComment.getBoundingClientRect();
+  const isDisplay = 0 < rect.bottom && rect.top < window.innerHeight;
+  if (isDisplay) {
+    if (isDownButton()) { btn.remove(); }
+  }
+  else {
+    if (!isDownButton()) { panel.after(btn); }
+  }
+};
+
+let ticking = false;
+document.addEventListener("scroll", (event) => {
+  if (!ticking) {
+    window.requestAnimationFrame(() => {
+      downButtonState();
+      ticking = false;
+    });
+    ticking = true;
+  }
+});
+</script>
+</body>
+</html>
