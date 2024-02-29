@@ -38,26 +38,57 @@
         pointer-events: none;
         width: 32px;
     }
+    .chat {
+        display: flex;
+    }
+    .chat span {
+        display: inline-block;
+        margin: auto 0;
+    }
+    .chat-number {
+        font-size: 0.5em;
+        text-align: right;
+    }
+    .chat-comment {
+        width: 50%;
+    }
+    .chat-userid {
+        min-width: 100px;
+    }
+    .chat-userid {
+        min-width: 100px;
+    }
+    .server-comment {
+        color: #f03;
+    }
 </style>
 </head>
 <body>
 <div id="comment-panel"></div>
 <script type="text/javascript">
+/* ※必須※（中身は書き換え自由）
+ * NCV本体からコメント追加の度に呼ばれる
+ * comment.html で指定された各項目が置換されて丸ごとコメント一つ分のhtmlタグとして渡される
+ */
+function addNewComment(comment) {
+  document.getElementById('comment-panel').insertAdjacentHTML('beforeend', comment);
+}
+
 function scrollBottom() {
   window.scrollTo(0, document.body.scrollHeight);
 }
 
-function isDownButton() {
+function isDownButtonVisible() {
   return document.getElementById("indicator") !== null;
 }
 
-const panel = document.getElementById('comment-panel');
+const commentPanel = document.getElementById('comment-panel');
 const mo = new MutationObserver(function() {
-  if (!isDownButton()) {
+  if (!isDownButtonVisible()) {
     scrollBottom();
   }
-  const lastComment = panel.lastElementChild;
-  if (lastComment.dataset.anonymity === "1") {
+  const lastComment = commentPanel.lastElementChild;
+  if (lastComment.dataset.anon === "1") {
     let elm = document.createElement('span');
     elm.textContent = "※匿名※";
     lastComment.appendChild(elm);
@@ -67,8 +98,19 @@ const mo = new MutationObserver(function() {
     elm.textContent = "P";
     lastComment.appendChild(elm);
   }
+  if (lastComment.dataset.server === "1") {
+    lastComment.querySelector('.chat-comment').classList.add('server-comment');
+    let elm = document.createElement('span');
+    elm.textContent = "※運営※";
+    lastComment.appendChild(elm);
+  }
+  if (lastComment.dataset.emotion === "1") {
+    let elm = document.createElement('span');
+    elm.textContent = "E";
+    lastComment.appendChild(elm);
+  }
 });
-mo.observe(panel, { childList: true });
+mo.observe(commentPanel, { childList: true });
 
 const btn = document.createElement('button');
 btn.id = "indicator";
@@ -77,14 +119,14 @@ btn.ariaLabel = "最新コメントに戻る";
 btn.onclick = scrollBottom;
 
 function downButtonState() {
-  const lastComment = panel.lastElementChild;
+  const lastComment = commentPanel.lastElementChild;
   const rect = lastComment.getBoundingClientRect();
   const isDisplay = 0 < rect.bottom && rect.top < window.innerHeight;
   if (isDisplay) {
-    if (isDownButton()) { btn.remove(); }
+    if (isDownButtonVisible()) { btn.remove(); }
   }
   else {
-    if (!isDownButton()) { panel.after(btn); }
+    if (!isDownButtonVisible()) { commentPanel.after(btn); }
   }
 };
 
