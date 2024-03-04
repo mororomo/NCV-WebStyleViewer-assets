@@ -56,3 +56,6 @@ function addNewComment(comment) {
 |&COMMENT|コメント本文|
 |&NICKNAME|ユーザー設定ニックネーム|
 |&USERID|ユーザーID|
+# ライセンス
+このリポジトリに含まれる各ファイルは、CC BY-NC-SA 4.0 ライセンスに基づいてライセンスされています。  
+詳細については、[LICENSE](./LICENSE) を参照してください。
