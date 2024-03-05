@@ -49,6 +49,14 @@
         font-size: 0.5em;
         text-align: right;
     }
+    .chat-usericon {
+        height: 24px;
+    }
+    .chat-usericon img {
+        border-radius: 50%;
+        height: 24px;
+        width: 24px;
+    }
     .chat-comment {
         width: 50%;
     }
@@ -65,13 +73,43 @@
 </head>
 <body>
 <div id="comment-panel"></div>
-<script type="text/javascript">
+<script language="javascript" type="text/javascript">
 /* ※必須※（中身は書き換え自由）
  * NCV本体からコメント追加の度に呼ばれる
  * comment.html で指定された各項目が置換されて丸ごとコメント一つ分のhtmlタグとして渡される
  */
 function addNewComment(comment) {
   document.getElementById('comment-panel').insertAdjacentHTML('beforeend', comment);
+}
+
+/* ユーザーアイコンを表示したい場合はtrueを返してください
+ * 必要ない場合はfalseを返すか丸ごと消してしまっても大丈夫です
+ */
+function needsUserIcon() {
+  return true;
+}
+
+/* ユーザーアイコンを表示したい場合は必須です
+ * 中身の処理やユーザーアイコン保持用配列の扱いなどは自由に書き換えてOKです
+ */
+var userIconMap = new Map();
+function addUserIcon(userId, image) {
+  userIconMap.set(userId, image);
+  // 画像取得より前にコメント反映が行われているので初回アイコン登録時に遡って適用する
+  let chatElm = commentPanel.getElementsByClassName('chat');
+  const len = Math.min(chatElm.length,100);
+  for(let i = 0; i < len; i++) {
+    if (chatElm[i].dataset.anon === "1") { continue; }
+    if (userId !== chatElm[i].getElementsByClassName('chat-userid')[0].textContent) { continue; }
+    const iconElm = chatElm[i].getElementsByClassName('chat-usericon');
+    if (iconElm.length === 0) { break; alert(uwa);}
+    let elm = document.createElement('img');
+    elm.src = 'data:image/jpeg;base64,' + image;
+    //elm.alt = '代替テキスト';
+    //elm.width = 24;
+    //elm.height = 24;
+    iconElm[0].appendChild(elm);
+  }
 }
 
 function scrollBottom() {
@@ -87,27 +125,44 @@ const mo = new MutationObserver(function() {
   if (!isDownButtonVisible()) {
     scrollBottom();
   }
-  const lastComment = commentPanel.lastElementChild;
-  if (lastComment.dataset.anon === "1") {
+  const newComment = commentPanel.lastElementChild;
+  if (newComment.dataset.anon === "1") {
     let elm = document.createElement('span');
     elm.textContent = "※匿名※";
-    lastComment.appendChild(elm);
+    newComment.appendChild(elm);
   }
-  if (lastComment.dataset.premium === "1") {
+  else {
+    const iconElm = newComment.getElementsByClassName('chat-usericon');
+    if(iconElm.length > 0) {
+      const userIdElm = newComment.getElementsByClassName('chat-userid');
+      if(userIdElm.length > 0) {
+        const icon = userIconMap.get(userIdElm[0].textContent);
+        if(icon) {
+          let elm = document.createElement('img');
+          elm.src = 'data:image/jpeg;base64,' + icon;
+          //elm.alt = '代替テキスト';
+          //elm.width = 24;
+          //elm.height = 24;
+          iconElm[0].appendChild(elm);
+        }
+      }
+    }
+  }
+  if (newComment.dataset.premium === "1") {
     let elm = document.createElement('span');
     elm.textContent = "P";
-    lastComment.appendChild(elm);
+    newComment.appendChild(elm);
   }
-  if (lastComment.dataset.server === "1") {
-    lastComment.querySelector('.chat-comment').classList.add('server-comment');
+  if (newComment.dataset.server === "1") {
+    newComment.querySelector('.chat-comment').classList.add('server-comment');
     let elm = document.createElement('span');
     elm.textContent = "※運営※";
-    lastComment.appendChild(elm);
+    newComment.appendChild(elm);
   }
-  if (lastComment.dataset.emotion === "1") {
+  if (newComment.dataset.emotion === "1") {
     let elm = document.createElement('span');
     elm.textContent = "E";
-    lastComment.appendChild(elm);
+    newComment.appendChild(elm);
   }
 });
 mo.observe(commentPanel, { childList: true });
