@@ -3,7 +3,7 @@
 ## 構成
 [assets](./assets) 以下、各設定をディレクトリ単位で管理します。  
 [default](./assets/default) ディレクトリは初期設定であり実行ファイルとともに配布されてインストールフォルダ内に配置されます。  
-独自のカスタム設定を自作する場合は、アプリケーション設定保存フォルダ ( `%APPDATA%\posite-c\NiconamaCommentViewer` ) 内に **WebStyleAssets** フォルダを作成し、その中で各設定ごとにフォルダ分けします。  
+独自のカスタム設定を使用する場合は、アプリケーション設定保存フォルダ ( `%APPDATA%\posite-c\NiconamaCommentViewer` ) 内に **WebStyleAssets** フォルダを作成し、その中で各設定ごとにフォルダ分けします。  
 > posite-c  
 > └── NiconamaCommentViewer  
 > 　　 ├── CommentLog  
@@ -24,15 +24,50 @@
 ## カスタム設定作成規則
 最低限 **index.html** と **comment.html** は必須です。
 ### index.html
-NCVで **WebStyleViewer** を開いたときに WebView2 上に読み込まれる html です。  
-`addNewComment` 関数はコメント受信の度にNCV本体から呼ばれるため必須です。関数の中身は行いたい演出に応じて自由に書き換え可能です。  
-```
+NCVで **WebStyleViewer** を開いたときや番組接続の度に WebView2 上に読み込まれます。  
+外部への接続はデフォルトではできないようにしてあります。（手動で設定ファイルを追加することでできるようにしてもいいかも）  
+
+`addNewComment()` はコメント追加用の関数で、新規コメント受信の度にNCV本体から呼ばれるため必須です。中身の処理は行いたい演出に応じて自由に書き換え可能です。  
+引数は comment.html に記載されたテンプレートタグにコメントデータを反映させたhtmlタグです。  
+```javascript
 function addNewComment(comment) {
   document.getElementById('comment-panel').insertAdjacentHTML('beforeend', comment);
 }
 ```
-それ以外はすべて自由です。  
-外部への接続はデフォルトではできないようにしてあります。（手動で設定ファイルを追加することでできるようにしてもいいかも）  
+#### ユーザーアイコンを表示する方法
+ユーザーアイコンを表示するにはNCV本体でのユーザーアイコン表示が有効になっている必要があります。  
+そのうえで取得された画像がBase64エンコードされ、文字列として WebStyleViewer に渡されます。  
+画面上への描画はコメント受信の際にJavaScriptなどで処理して行なってください。  
+
+`needsUserIcon()` はユーザーアイコンを表示したい場合に必須となります。 index.html が読み込まれたタイミングで確認が行われ、画像データを渡すか決定されます。  
+ユーザーアイコンが必要な場合は `true` を返してください。必要ない場合は `false` を返すか丸ごと消してしまっても大丈夫です。  
+```javascript
+function needsUserIcon() {
+  return true;
+}
+```
+また、`addUserIcon()` はユーザーアイコン画像を追加するため必須となります。  
+デフォルトではMapオブジェクトへ蓄積していき、新規登録時の適用処理も行なっています。  
+画像の蓄積方法や関数内の処理などは自由に書き換えてください。  
+第一引数はユーザーID、第二引数はBase64エンコードされたアイコン画像です。  
+```javascript
+var userIconMap = new Map();
+function addUserIcon(userId, image) {
+  userIconMap.set(userId, image);
+  // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
+  let chatElm = commentPanel.getElementsByClassName('chat');
+  const len = Math.max(chatElm.length - 50,0);
+  for(let i = chatElm.length - 1; i >= len; i--) {
+    if (chatElm[i].dataset.anon === "1") { continue; }
+    if (userId !== chatElm[i].getElementsByClassName('chat-userid')[0].textContent) { continue; }
+    const iconElm = chatElm[i].getElementsByClassName('chat-usericon');
+    if (iconElm.length === 0) { break; }
+    const elm = document.createElement('img');
+    elm.src = 'data:image/jpeg;base64,' + image;
+    iconElm[0].appendChild(elm);
+  }
+}
+```
 ### comment.html
 コメントが受信される度に **index.html** に送られる、コメント一つ分のhtmlタグです。  
 > [!CAUTION]
