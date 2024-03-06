@@ -6,68 +6,72 @@
 <title>NCV WebStyleViewr</title>
 <style>
     #indicator {
-        background-color: #727272;
-        border: none;
-        border-radius: 4px;
-        bottom: 8px;
-        cursor: pointer;
-        display: block;
-        filter: drop-shadow(0 0 3px rgba(0,0,0,.3));
-        height: 32px;
-        left: 50%;
-        opacity: .7;
-        outline: none;
-        padding: 0;
-        position: fixed;
-        transition: opacity .2s ease;
-        width: 32px;
-        will-change: opacity,bottom;
+      background-color: #727272;
+      border: none;
+      border-radius: 4px;
+      bottom: 8px;
+      cursor: pointer;
+      display: block;
+      filter: drop-shadow(0 0 3px rgba(0,0,0,.3));
+      height: 32px;
+      left: 50%;
+      opacity: .7;
+      outline: none;
+      padding: 0;
+      position: fixed;
+      transition: opacity .2s ease;
+      width: 32px;
+      will-change: opacity,bottom;
     }
     #indicator:hover {
-        opacity: 1;
+      opacity: 1;
     }
     #indicator:before {
-        background-color: #f4f4f4;
-        content: "";
-        display: inline-block;
-        height: 32px;
-        -webkit-mask-image: url(./img/down_button.svg);
-        -webkit-mask-position: center;
-        -webkit-mask-repeat: no-repeat;
-        -webkit-mask-size: contain;
-        pointer-events: none;
-        width: 32px;
+      background-color: #f4f4f4;
+      content: "";
+      display: inline-block;
+      height: 32px;
+      -webkit-mask-image: url(./img/down_button.svg);
+      -webkit-mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-size: contain;
+      pointer-events: none;
+      width: 32px;
     }
     .chat {
-        display: flex;
+      display: flex;
     }
     .chat span {
-        display: inline-block;
-        margin: auto 0;
+      display: inline-block;
+      margin: auto 0;
     }
     .chat-number {
-        font-size: 0.5em;
-        text-align: right;
+      font-size: 0.5em;
+      text-align: right;
     }
     .chat-usericon {
-        height: 24px;
+      height: 24px;
+      padding-left: 4px;
+      width: 24px;
     }
     .chat-usericon img {
-        border-radius: 50%;
-        height: 24px;
-        width: 24px;
+      border-radius: 50%;
+      height: 24px;
+      width: 24px;
     }
     .chat-comment {
-        width: 50%;
+      padding-left: 4px;
+      width: 300px;
+    }
+    .chat-nickname {
+      padding-left: 4px;
+      width: 120px;
     }
     .chat-userid {
-        min-width: 100px;
-    }
-    .chat-userid {
-        min-width: 100px;
+      min-width: 100px;
     }
     .server-comment {
-        color: #f03;
+      color: #f03;
     }
 </style>
 </head>
@@ -95,21 +99,26 @@ function needsUserIcon() {
 var userIconMap = new Map();
 function addUserIcon(userId, image) {
   userIconMap.set(userId, image);
-  // 画像取得より前にコメント反映が行われているので初回アイコン登録時に遡って適用する
+  // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
   let chatElm = commentPanel.getElementsByClassName('chat');
-  const len = Math.min(chatElm.length,100);
-  for(let i = 0; i < len; i++) {
+  const len = Math.max(chatElm.length - 50,0);
+  for(let i = chatElm.length - 1; i >= len; i--) {
     if (chatElm[i].dataset.anon === "1") { continue; }
     if (userId !== chatElm[i].getElementsByClassName('chat-userid')[0].textContent) { continue; }
     const iconElm = chatElm[i].getElementsByClassName('chat-usericon');
-    if (iconElm.length === 0) { break; alert(uwa);}
-    let elm = document.createElement('img');
-    elm.src = 'data:image/jpeg;base64,' + image;
-    //elm.alt = '代替テキスト';
-    //elm.width = 24;
-    //elm.height = 24;
+    if (iconElm.length === 0) { break; }
+    const elm = getUserIconElement(image);
     iconElm[0].appendChild(elm);
   }
+}
+
+function getUserIconElement(image) {
+  const elm = document.createElement('img');
+  elm.src = 'data:image/jpeg;base64,' + image;
+  //elm.alt = '代替テキスト';
+  //elm.width = 24;
+  //elm.height = 24;
+  return elm;
 }
 
 function scrollBottom() {
@@ -136,13 +145,9 @@ const mo = new MutationObserver(function() {
     if(iconElm.length > 0) {
       const userIdElm = newComment.getElementsByClassName('chat-userid');
       if(userIdElm.length > 0) {
-        const icon = userIconMap.get(userIdElm[0].textContent);
-        if(icon) {
-          let elm = document.createElement('img');
-          elm.src = 'data:image/jpeg;base64,' + icon;
-          //elm.alt = '代替テキスト';
-          //elm.width = 24;
-          //elm.height = 24;
+        const image = userIconMap.get(userIdElm[0].textContent);
+        if(image) {
+          const elm = getUserIconElement(image);
           iconElm[0].appendChild(elm);
         }
       }
