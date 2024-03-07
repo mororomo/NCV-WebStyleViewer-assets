@@ -5,74 +5,80 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NCV WebStyleViewr</title>
 <style>
-    #indicator {
-      background-color: #727272;
-      border: none;
-      border-radius: 4px;
-      bottom: 8px;
-      cursor: pointer;
-      display: block;
-      filter: drop-shadow(0 0 3px rgba(0,0,0,.3));
-      height: 32px;
-      left: 50%;
-      opacity: .7;
-      outline: none;
-      padding: 0;
-      position: fixed;
-      transition: opacity .2s ease;
-      width: 32px;
-      will-change: opacity,bottom;
-    }
-    #indicator:hover {
-      opacity: 1;
-    }
-    #indicator:before {
-      background-color: #f4f4f4;
-      content: "";
-      display: inline-block;
-      height: 32px;
-      -webkit-mask-image: url(./img/down_button.svg);
-      -webkit-mask-position: center;
-      -webkit-mask-repeat: no-repeat;
-      -webkit-mask-size: contain;
-      pointer-events: none;
-      width: 32px;
-    }
-    .chat {
-      display: flex;
-    }
-    .chat span {
-      display: inline-block;
-      margin: auto 0;
-    }
-    .chat-number {
-      font-size: 0.5em;
-      text-align: right;
-    }
-    .chat-usericon {
-      height: 24px;
-      padding-left: 4px;
-      width: 24px;
-    }
-    .chat-usericon img {
-      border-radius: 50%;
-      height: 24px;
-      width: 24px;
-    }
-    .chat-comment {
-      padding-left: 4px;
-      width: 300px;
-    }
-    .chat-nickname {
-      padding-left: 4px;
-      width: 120px;
-    }
-    .chat-userid {
-      min-width: 100px;
-    }
-    .server-comment {
-      color: #f03;
-    }
+  #indicator {
+    background-color: #727272;
+    border: none;
+    border-radius: 4px;
+    bottom: 8px;
+    cursor: pointer;
+    display: block;
+    filter: drop-shadow(0 0 3px rgba(0,0,0,.3));
+    height: 32px;
+    left: 50%;
+    opacity: .7;
+    outline: none;
+    padding: 0;
+    position: fixed;
+    transition: opacity .2s ease;
+    width: 32px;
+    will-change: opacity,bottom;
+  }
+  #indicator:hover {
+    opacity: 1;
+  }
+  #indicator:before {
+    background-color: #f4f4f4;
+    content: "";
+    display: inline-block;
+    height: 32px;
+    -webkit-mask-image: url(./img/down_button.svg);
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    pointer-events: none;
+    width: 32px;
+  }
+  .chat {
+    display: flex;
+  }
+  .chat span {
+    display: inline-block;
+    margin: auto 0;
+  }
+  .chat-number {
+    font-size: .5em;
+    text-align: right;
+  }
+  .chat-usericon {
+    height: 24px;
+    padding-left: 4px;
+    width: 24px;
+  }
+  .chat-usericon img {
+    border-radius: 50%;
+    height: 24px;
+    width: 24px;
+  }
+  .chat-comment {
+    padding-left: 4px;
+    width: 100%;
+  }
+  .chat-nickname {
+    font-size: .7em;
+    padding-left: 4px;
+    width: 100px;
+  }
+  .premium {
+    color: gold;
+    font-weight: bold;
+    padding-right: 4px;
+  }
+  .server-comment {
+    color: #f03;
+  }
+  span.chat-userid {
+    display: none;
+  }
 </style>
 </head>
 <body>
@@ -135,12 +141,7 @@ const mo = new MutationObserver(function() {
     scrollBottom();
   }
   const newComment = commentPanel.lastElementChild;
-  if (newComment.dataset.anon === "1") {
-    let elm = document.createElement('span');
-    elm.textContent = "※匿名※";
-    newComment.appendChild(elm);
-  }
-  else {
+  if (newComment.dataset.anon !== "1") {
     const iconElm = newComment.getElementsByClassName('chat-usericon');
     if(iconElm.length > 0) {
       const userIdElm = newComment.getElementsByClassName('chat-userid');
@@ -155,14 +156,12 @@ const mo = new MutationObserver(function() {
   }
   if (newComment.dataset.premium === "1") {
     let elm = document.createElement('span');
+    elm.classList.add("premium");
     elm.textContent = "P";
-    newComment.appendChild(elm);
+    newComment.getElementsByClassName('chat-nickname')[0].insertAdjacentElement('afterbegin', elm);
   }
   if (newComment.dataset.server === "1") {
     newComment.querySelector('.chat-comment').classList.add('server-comment');
-    let elm = document.createElement('span');
-    elm.textContent = "※運営※";
-    newComment.appendChild(elm);
   }
   if (newComment.dataset.emotion === "1") {
     let elm = document.createElement('span');
