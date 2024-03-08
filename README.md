@@ -24,8 +24,26 @@
 ## カスタム設定作成規則
 最低限 **index.html** と **comment.html** は必須です。
 ### index.html
-NCVで **WebStyleViewer** を開いたときや番組接続の度に WebView2 上に読み込まれます。  
-外部への接続はデフォルトではできないようにしてあります。（手動で設定ファイルを追加することでできるようにしてもいいかも）  
+NCVで WebStyleViewer を開いたときや番組切り替えの度に読み込まれます。  
+外部へのアクセスはデフォルトではできないようにしてあります。（手動で設定ファイルを追加することでできるようにしてもいいかも）  
+以下は最小限の構成です。
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div id="comment-panel"></div>
+<script language="javascript" type="text/javascript">
+function addNewComment(comment) {
+  document.getElementById('comment-panel').insertAdjacentHTML('beforeend', comment);
+}
+</script>
+</body>
+</html>
+```
 
 `addNewComment()` はコメント追加用の関数で、新規コメント受信の度にNCV本体から呼ばれるため必須です。中身の処理は行いたい演出に応じて自由に書き換え可能です。  
 引数は comment.html に記載されたテンプレートタグにコメントデータを反映させたhtmlタグです。  
@@ -39,14 +57,14 @@ function addNewComment(comment) {
 そのうえで取得された画像がBase64エンコードされ、文字列として WebStyleViewer に渡されます。  
 画面上への描画はコメント受信の際にJavaScriptなどで処理して行なってください。  
 
-`needsUserIcon()` はユーザーアイコンを表示したい場合に必須となります。 index.html が読み込まれたタイミングで確認が行われ、画像データを渡すか決定されます。  
+`needsUserIcon()` はユーザーアイコンを表示したい場合に必須となります。 index.html が読み込まれたタイミングでNCV本体から確認が行われ、画像データを渡すか決定されます。  
 ユーザーアイコンが必要な場合は `true` を返してください。必要ない場合は `false` を返すか丸ごと消してしまっても大丈夫です。  
 ```javascript
 function needsUserIcon() {
   return true;
 }
 ```
-また、`addUserIcon()` はユーザーアイコン画像を追加するため必須となります。  
+また、`addUserIcon()` はユーザーアイコン画像の追加関数であり、新規取得した画像データをNCV本体から渡すため必須となります。  
 デフォルトではMapオブジェクトへ蓄積していき、新規登録時の適用処理も行なっています。  
 画像の蓄積方法や関数内の処理などは自由に書き換えてください。  
 第一引数はユーザーID、第二引数はBase64エンコードされたアイコン画像です。  
@@ -69,7 +87,8 @@ function addUserIcon(userId, image) {
 }
 ```
 ### comment.html
-コメントが受信される度に **index.html** に送られる、コメント一つ分のhtmlタグです。  
+コメントが受信される度に **index.html** に送られる、コメント一つ分のテンプレートタグです。  
+WebStyleViewer を開いたときや番組切り替え時、初期化のタイミングでファイルが読み込まれて `CR` および `LF` が削除されて使われます。  
 > [!CAUTION]
 > ファイル内の指定項目が変換されたのち丸々 **index.html** へ送られるため、余分なタグやコメント等は記載しないでください。  
 #### コメント外枠タグ属性置換用変数
