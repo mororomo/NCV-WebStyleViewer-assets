@@ -91,6 +91,7 @@
 <body>
 <div id="comment-panel"></div>
 <script language="javascript" type="text/javascript">
+const commentPanel = document.getElementById('comment-panel');
 /* ※必須※（中身は書き換え自由）
  * NCV本体からコメント追加の度に呼ばれる
  * comment.html で指定された各項目が置換されて丸ごとコメント一つ分のhtmlタグとして渡される
@@ -125,6 +126,7 @@ function addUserIcon(userId, image) {
   }
 }
 
+// ユーザーアイコンタグ生成
 function getUserIconElement(image) {
   const elm = document.createElement('img');
   elm.src = 'data:image/jpeg;base64,' + image;
@@ -134,15 +136,17 @@ function getUserIconElement(image) {
   return elm;
 }
 
+// 最下部へ移動
 function scrollBottom() {
   window.scrollTo(0, document.body.scrollHeight);
 }
 
+// 最下部スクロールボタンが表示されているか判定
 function isDownButtonVisible() {
   return document.getElementById("indicator") !== null;
 }
 
-const commentPanel = document.getElementById('comment-panel');
+// 新しくコメントが追加された後に発生するイベント
 const mo = new MutationObserver(function() {
   if (!isDownButtonVisible()) {
     scrollBottom();
@@ -178,12 +182,14 @@ const mo = new MutationObserver(function() {
 });
 mo.observe(commentPanel, { childList: true });
 
+// 最下部へのスクロールボタン生成
 const btn = document.createElement('button');
 btn.id = "indicator";
 btn.type = "button";
 btn.ariaLabel = "最新コメントに戻る";
 btn.onclick = scrollBottom;
 
+// 最下部スクロールボタンを表示させるか判定して表示状態を切り替える
 function downButtonState() {
   const lastComment = commentPanel.lastElementChild;
   const rect = lastComment.getBoundingClientRect();
@@ -196,6 +202,7 @@ function downButtonState() {
   }
 };
 
+// スクロールが行われたときに発生するイベント
 let ticking = false;
 document.addEventListener("scroll", (event) => {
   if (!ticking) {
