@@ -52,7 +52,7 @@
   .chat-usericon {
     height: 24px;
     padding-left: 4px;
-    width: 24px;
+    width: 28px;
   }
   .chat-usericon img {
     border-radius: 50%;
@@ -62,6 +62,13 @@
   .chat-comment {
     padding-left: 4px;
     width: 100%;
+  }
+  .emotion {
+    background-image: url(./img/emotion.png);
+    background-size: cover;
+    float: left;
+    height: 20px;
+    width: 20px;
   }
   .chat-nickname {
     font-size: .7em;
@@ -164,9 +171,9 @@ const mo = new MutationObserver(function() {
     newComment.querySelector('.chat-comment').classList.add('server-comment');
   }
   if (newComment.dataset.emotion === "1") {
-    let elm = document.createElement('span');
-    elm.textContent = "E";
-    newComment.appendChild(elm);
+    let elm = document.createElement('div');
+    elm.classList.add("emotion");
+    newComment.getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
   }
 });
 mo.observe(commentPanel, { childList: true });
