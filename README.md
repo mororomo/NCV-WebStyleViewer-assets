@@ -1,8 +1,9 @@
 # NCV-WebStyleViewer-assets
-ニコニコ生放送専用コメントビューア [NCV (NiconamaCommentViewer)](https://www.posite-c.com/application/ncv/) で WebStyleViewer 利用時に適用されるHTML素材です。
+ニコニコ生放送専用コメントビューア [**NCV** (NiconamaCommentViewer)](https://www.posite-c.com/application/ncv/) で WebStyleViewer 利用時に適用されるHTML素材です。  
+WebStyleViewer は HTML、CSS、JavaScript などで見た目や動作処理を自由にカスタマイズ可能な **NCV** の新しい表示機能です。
 ## 構成
 [assets](./assets) 以下、各設定をディレクトリ単位で管理します。  
-[default](./assets/default) ディレクトリは初期設定であり実行ファイルとともに配布されてインストールフォルダ内に配置されます。  
+[default](./assets/default) ディレクトリは初期設定でありNCV本体とともに配布されてインストールフォルダ内に配置されます。  
 独自のカスタム設定を使用する場合は、アプリケーション設定保存フォルダ ( `%APPDATA%\posite-c\NiconamaCommentViewer` ) 内に **WebStyleAssets** フォルダを作成し、その中で各設定ごとにフォルダ分けします。  
 > posite-c  
 > └── NiconamaCommentViewer  
@@ -47,7 +48,7 @@ function addNewComment(comment) {
 
 `addNewComment()` はコメント追加用の関数で、新規コメント受信の度にNCV本体から呼ばれるため必須です。中身の処理は行いたい演出に応じて自由に書き換え可能です。  
 引数は comment.html に記載されたテンプレートタグにコメントデータを反映させたhtmlタグです。  
-```javascript
+```js
 function addNewComment(comment) {
   document.getElementById('comment-panel').insertAdjacentHTML('beforeend', comment);
 }
@@ -60,10 +61,11 @@ function addNewComment(comment) {
  * NCV本体でユーザーアイコン表示を有効にする
  * `needsUserIcon()` で `true` を返す
  * 画像データ蓄積用のオブジェクトを用意して `addUserIcon()` でデータ追加処理を書く
+ * 新規コメント受け取り時にオブジェクトを検索して描画する
 
 `needsUserIcon()` はユーザーアイコンを表示したい場合に必須となります。 index.html が読み込まれたタイミングでNCV本体から確認が行われ、画像データを渡すか決定されます。  
 ユーザーアイコンが必要な場合は `true` を返してください。必要ない場合は `false` を返すか丸ごと消してしまっても大丈夫です。  
-```javascript
+```js
 function needsUserIcon() {
   return true;
 }
@@ -72,7 +74,7 @@ function needsUserIcon() {
 デフォルトではMapオブジェクトへ蓄積していき、新規登録時の適用処理も行なっています。  
 画像の蓄積方法や関数内の処理などは自由に書き換えてください。  
 第一引数はユーザーID、第二引数はBase64エンコードされたアイコン画像です。  
-```javascript
+```js
 var userIconMap = new Map();
 function addUserIcon(userId, image) {
   userIconMap.set(userId, image);
