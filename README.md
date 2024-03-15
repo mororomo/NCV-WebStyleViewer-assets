@@ -1,6 +1,9 @@
 # NCV-WebStyleViewer-assets
 ニコニコ生放送専用コメントビューア [**NCV** (NiconamaCommentViewer)](https://www.posite-c.com/application/ncv/) で WebStyleViewer 利用時に適用されるHTML素材です。  
 WebStyleViewer は HTML、CSS、JavaScript などで見た目や動作処理を自由にカスタマイズ可能な **NCV** の新しい表示機能です。
+## 仕組み
+表示するページのベースとなる index.html に、コメントを新規受信する毎にコメント一つ分の表示データを反映した comment.html 内のタグを渡していきます。  
+最低限コメントを渡すための関数を用意するのみでその他の処理は利用者側で自由に書くことができるため、通常のNCVではできなかったグラフィカルな描画やアニメーションなど多彩な表示方法が実現できます。
 ## 構成
 [assets](./assets) 以下、各設定をディレクトリ単位で管理します。  
 [default](./assets/default) ディレクトリは初期設定でありNCV本体とともに配布されてインストールフォルダ内に配置されます。  
@@ -59,8 +62,8 @@ function addNewComment(comment) {
 画面上への描画はコメント受信の際にJavaScriptなどで処理して行なってください。  
 手短にまとめると、
  * NCV本体でユーザーアイコン表示を有効にする
- * `needsUserIcon()` で `true` を返す
- * 画像データ蓄積用のオブジェクトを用意して `addUserIcon()` でデータ追加処理を書く
+ * index.html にて `needsUserIcon()` で `true` を返す
+ * index.html にて画像データ蓄積用のオブジェクトを用意して `addUserIcon()` でデータ追加処理を書く
  * 新規コメント受け取り時にオブジェクトを検索して描画する
 
 `needsUserIcon()` はユーザーアイコンを表示したい場合に必須となります。 index.html が読み込まれたタイミングでNCV本体から確認が行われ、画像データを渡すか決定されます。  
@@ -97,8 +100,19 @@ function addUserIcon(userId, image) {
 コメントが受信される度に **index.html** に送られる、コメント一つ分のテンプレートタグです。  
 WebStyleViewer を開いたときや番組切り替え時、初期化のタイミングでファイルが読み込まれて `CR` および `LF` が削除されて使われます。  
 > [!CAUTION]
-> ファイル内の指定項目が変換されたのち丸々 **index.html** へ送られるため、余分なタグやコメント等は記載しないでください。  
-#### コメント外枠タグ属性置換用変数
+> ファイル内の指定項目が変換されたのち丸々 **index.html** へ送られるため、余分なタグやコメント等は記載しないでください。
+
+以下は comment.html 記述例です。
+```html
+<div class="chat"&ANONYMITY&PREMIUM&SERVERCOMMENT&EMOTION>
+<span class="chat-number">&NUMBER</span>
+<span class="chat-usericon"></span>
+<span class="chat-nickname">&NICKNAME</span>
+<span class="chat-comment">&COMMENT</span>
+<span class="chat-userid">&USERID</span>
+</div>
+```
+#### 属性置換用変数
 |変数|変換後の値|説明|
 ----|----|----
 |&ANONYMITY|␣data-anon="1"|匿名IDコメント（なふだオフ）|
@@ -118,5 +132,5 @@ WebStyleViewer を開いたときや番組切り替え時、初期化のタイ�
 |&NICKNAME|ユーザー設定ニックネーム|
 |&COMMENT|コメント本文|
 ## ライセンス
-このリポジトリに含まれる各ファイルは、CC BY-NC-SA 4.0 ライセンスに基づいてライセンスされています。  
+このリポジトリに含まれる各ファイルは、CC BY-NC-SA 4.0 に基づいてライセンスされています。  
 詳細については、[LICENSE](./LICENSE) を参照してください。
