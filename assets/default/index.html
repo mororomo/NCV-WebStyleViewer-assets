@@ -70,13 +70,22 @@
     height: 20px;
     width: 20px;
   }
+  .gift-image {
+    background-size: cover;
+    float: left;
+    width: 48px;
+  }
+  .gift-image img {
+    height: auto;
+    max-width: 100%;
+  }
   .chat-nickname {
     font-size: .7em;
     padding-left: 4px;
     width: 100px;
   }
   .premium {
-    color: gold;
+    color: goldenrod;
     font-weight: bold;
     padding-right: 4px;
   }
@@ -93,22 +102,15 @@
 <script language="javascript" type="text/javascript">
 const commentPanel = document.getElementById('comment-panel');
 /* ※必須※（中身は書き換え自由）
- * NCV本体からコメント追加の度に呼ばれる
+ * NCV本体から呼ばれるコメント追加処理
  * comment.html で指定された各項目が置換されて丸ごとコメント一つ分のhtmlタグとして渡される
  */
 function addNewComment(comment) {
   document.getElementById('comment-panel').insertAdjacentHTML('beforeend', comment);
 }
 
-/* ユーザーアイコンを表示したい場合はtrueを返してください
- * 必要ない場合はfalseを返すか丸ごと消してしまっても大丈夫です
- */
-function needsUserIcon() {
-  return true;
-}
-
-/* ユーザーアイコンを表示したい場合は必須です
- * 中身の処理やユーザーアイコン保持用配列の扱いなどは自由に書き換えてOKです
+/* NCV本体から呼ばれるユーザーアイコンを追加する処理
+ * ユーザーアイコンを表示したい場合は必須です
  */
 var userIconMap = new Map();
 function addUserIcon(userId, image) {
@@ -121,18 +123,44 @@ function addUserIcon(userId, image) {
     if (userId !== chatElm[i].getElementsByClassName('chat-userid')[0].textContent) { continue; }
     const iconElm = chatElm[i].getElementsByClassName('chat-usericon');
     if (iconElm.length === 0) { break; }
-    const elm = getUserIconElement(image);
+    const elm = getImageElement(image);
     iconElm[0].appendChild(elm);
   }
 }
 
-// ユーザーアイコンタグ生成
-function getUserIconElement(image) {
+/* NCV本体から呼ばれるギフト画像を追加する処理
+ * ギフト画像を表示したい場合は必須です
+ */
+ var giftImageMap = new Map();
+function addGiftImage(giftId, image) {
+  giftImageMap.set(giftId, image);
+  // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
+  let chatElm = commentPanel.getElementsByClassName('chat');
+  const len = Math.max(chatElm.length - 50,0);
+  for(let i = chatElm.length - 1; i >= len; i--) {
+    if (!chatElm[i].dataset.gift) { continue; }
+    if (giftId !== chatElm[i].dataset.gift) { continue; }
+    let elm = getGiftImageElement(image);
+    chatElm[i].getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
+  }
+}
+
+// base64画像タグ生成
+function getImageElement(image) {
   const elm = document.createElement('img');
   elm.src = 'data:image/jpeg;base64,' + image;
   //elm.alt = '代替テキスト';
   //elm.width = 24;
   //elm.height = 24;
+  return elm;
+}
+
+// ギフト画像挿入用タグ生成
+function getGiftImageElement(image) {
+  let elm = document.createElement('div');
+  elm.classList.add("gift-image");
+  const giftElm = getImageElement(image);
+  elm.appendChild(giftElm);
   return elm;
 }
 
@@ -152,32 +180,39 @@ const mo = new MutationObserver(function() {
     scrollBottom();
   }
   const newComment = commentPanel.lastElementChild;
-  if (newComment.dataset.anon !== "1") {
+  if (!newComment.dataset.anon) {
     const iconElm = newComment.getElementsByClassName('chat-usericon');
     if(iconElm.length > 0) {
       const userIdElm = newComment.getElementsByClassName('chat-userid');
       if(userIdElm.length > 0) {
         const image = userIconMap.get(userIdElm[0].textContent);
         if(image) {
-          const elm = getUserIconElement(image);
+          const elm = getImageElement(image);
           iconElm[0].appendChild(elm);
         }
       }
     }
   }
-  if (newComment.dataset.premium === "1") {
+  if (newComment.dataset.premium) {
     let elm = document.createElement('span');
     elm.classList.add("premium");
     elm.textContent = "P";
     newComment.getElementsByClassName('chat-nickname')[0].insertAdjacentElement('afterbegin', elm);
   }
-  if (newComment.dataset.server === "1") {
+  if (newComment.dataset.server) {
     newComment.querySelector('.chat-comment').classList.add('server-comment');
   }
-  if (newComment.dataset.emotion === "1") {
+  if (newComment.dataset.emotion) {
     let elm = document.createElement('div');
     elm.classList.add("emotion");
     newComment.getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
+  }
+  if (newComment.dataset.gift) {
+    const image = giftImageMap.get(newComment.dataset.gift);
+    if(image) {
+      let elm = getGiftImageElement(image);
+      newComment.getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
+    }
   }
 });
 mo.observe(commentPanel, { childList: true });
