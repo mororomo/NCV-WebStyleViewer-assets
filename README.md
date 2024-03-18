@@ -3,7 +3,7 @@
 WebStyleViewer は HTML、CSS、JavaScript などで見た目や動作処理を自由にカスタマイズ可能な **NCV** の新しい表示機能です。
 
 コメントを新規受信する毎にベースとなる index.html へコメント一つ分の表示データを反映した comment.html 内のタグを渡していきます。  
-最低限コメントを渡すための関数を用意するのみでその関数の中身も含めすべての処理を利用者側で自由に書くことができるため、通常のNCVではできなかったグラフィカルな描画やアニメーションなど多彩な表示方法が実現できます。
+最低限コメントを渡すための関数を用意すればその関数の中身も含めすべての処理を利用者側で自由に書くことができるため、通常のNCVではできなかったグラフィカルな描画やアニメーションなど多彩な表示方法が実現できます。
 ## 構成
 [assets](./assets) 以下、各設定をディレクトリ単位で管理します。  
 [default](./assets/default) ディレクトリは初期設定でありNCV本体とともに配布されてインストールフォルダ内に配置されます。  
@@ -49,7 +49,7 @@ function addNewComment(comment) {
 </html>
 ```
 
-`addNewComment()` はコメント追加用の関数で、新規コメント受信の度にNCV本体から呼ばれるため必須です。中身の処理は行いたい演出に応じて自由に書き換え可能です。  
+`addNewComment()` はコメント追加用の関数で、新規コメント受信の度にNCV本体から呼ばれるため必須です。中身の処理は行いたい演出に応じて自由に書き換えてください。  
 引数は comment.html に記載されたテンプレートタグにコメントデータを反映させたhtmlタグです。  
 ```js
 function addNewComment(comment) {
@@ -64,7 +64,7 @@ function addNewComment(comment) {
  * NCV本体でユーザーアイコン表示を有効にする
  * ~~index.html にて `needsUserIcon()` で `true` を返す~~
  * index.html にて画像データ蓄積用のオブジェクトを用意して `addUserIcon()` でデータ追加処理を書く
- * 新規コメント受け取り時にオブジェクトを検索して描画する
+ * 新規コメント受け取り時にオブジェクトをユーザーIDで検索して描画する
 
 ~~`needsUserIcon()` はユーザーアイコンを表示したい場合に必須となります。 index.html が読み込まれたタイミングでNCV本体から確認が行われ、画像データを渡すか決定されます。  
 ユーザーアイコンが必要な場合は `true` を返してください。必要ない場合は `false` を返すか丸ごと消してしまっても大丈夫です。~~  
@@ -93,6 +93,34 @@ function addUserIcon(userId, image) {
 }
 ```
 以後新規取得コメントへはユーザーIDを判別したのち適宜ユーザーアイコンの表示を行なってください。
+#### ギフト画像を表示する方法 (0.221.2.101 以降)
+index.html 内に `addGiftImage()` 関数の存在が確認されたときのみ取得された画像がBase64エンコードされ、文字列として WebStyleViewer に渡されます。  
+画面上への描画はコメント受信の際にJavaScriptなどで処理して行なってください。  
+
+`addGiftImage()` はギフト画像の追加関数であり、新規取得した画像データをNCV本体から渡すため必須となります。  
+デフォルトではMapオブジェクトへ蓄積していき、新規登録時の適用処理も行なっています。  
+画像の蓄積方法や関数内の処理などは自由に書き換えてください。  
+第一引数はギフトID、第二引数はBase64エンコードされたギフト画像です。  
+```js
+var giftImageMap = new Map();
+function addGiftImage(giftId, image) {
+  giftImageMap.set(giftId, image);
+  // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
+  let chatElm = commentPanel.getElementsByClassName('chat');
+  const len = Math.max(chatElm.length - 50,0);
+  for(let i = chatElm.length - 1; i >= len; i--) {
+    if (!chatElm[i].dataset.gift) { continue; }
+    if (giftId !== chatElm[i].dataset.gift) { continue; }
+    let elm = document.createElement('div');
+    elm.classList.add("gift-image");
+    const giftElm = document.createElement('img');
+    giftElm.src = 'data:image/jpeg;base64,' + image;
+    elm.appendChild(giftElm);
+    chatElm[i].getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
+  }
+}
+```
+以後新規取得コメントへはギフトIDを判別したのち適宜ギフト画像の表示を行なってください。
 ### comment.html
 コメントが受信される度に **index.html** に送られる、コメント一つ分のテンプレートタグです。  
 WebStyleViewer を開いたときや番組切り替え時、初期化のタイミングでファイルが読み込まれて `CR` および `LF` が削除されて使われます。  
@@ -116,6 +144,8 @@ WebStyleViewer を開いたときや番組切り替え時、初期化のタイ�
 |&PREMIUM|␣data-premium="1"|プレミアムアカウント|
 |&SERVERCOMMENT|␣data-server="1"|運営コメント|
 |&EMOTION|␣data-emotion="1"|エモーション|
+|&NICOAD|␣data-nicoad="1"|ニコニ広告 (0.221.2.101 以降)|
+|&GIFT|␣data-gift="<gift_id>"|ギフト (0.221.2.101 以降)|
 
 これらの情報はカスタムデータ属性として変換されるので、JavaScript等で処理して描画に反映させてください。  
 > [!NOTE]
