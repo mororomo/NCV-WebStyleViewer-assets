@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NCV WebStyleViewr</title>
+<style>
+  body {
+    background-color: whitesmoke;
+  }
+  #indicator {
+    background-color: #727272;
+    border: none;
+    border-radius: 4px;
+    bottom: 8px;
+    cursor: pointer;
+    display: block;
+    filter: drop-shadow(0 0 3px rgba(0,0,0,.3));
+    height: 32px;
+    left: 50%;
+    opacity: .7;
+    outline: none;
+    padding: 0;
+    position: fixed;
+    transition: opacity .2s ease;
+    width: 32px;
+    will-change: opacity,bottom;
+  }
+  #indicator:hover {
+    opacity: 1;
+  }
+  #indicator:before {
+    background-color: #f4f4f4;
+    content: "";
+    display: inline-block;
+    height: 32px;
+    -webkit-mask-image: url(./img/down_button.svg);
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    pointer-events: none;
+    width: 32px;
+  }
+  .chat {
+    background-color: white;
+    border: solid 1px gainsboro;
+    border-radius: 4px;
+    display: flex;
+    margin: 6px 0;
+  }
+  .chat span {
+    display: inline-block;
+    margin: auto 0;
+  }
+  .chat-right {
+    padding: 0 4px;
+  }
+  .chat-number {
+    font-size: .5em;
+  }
+  .chat-elapsedtime {
+    font-size: .7em;
+    padding-left: 8px;
+  }
+  .chat-usericon {
+    float: left;
+    margin: auto 0;
+    max-height: 24px;
+    min-width: 26px;
+    width: 26px;
+  }
+  .chat-usericon img {
+    border-radius: 50%;
+    height: 24px;
+    padding-left: 2px;
+    width: 24px;
+  }
+  .chat-comment {
+    width: 100%;
+  }
+  .emotion {
+    background-image: url(./img/emotion.png);
+    background-size: cover;
+    float: left;
+    height: 20px;
+    width: 20px;
+  }
+  .gift-image {
+    background-size: cover;
+    float: left;
+    width: 48px;
+  }
+  .gift-image img {
+    height: auto;
+    max-width: 100%;
+  }
+  .chat-nickname {
+    font-size: .7em;
+    padding-left: 8px;
+    width: 100px;
+  }
+  .premium {
+    color: goldenrod;
+    font-weight: bold;
+    padding-right: 4px;
+  }
+  .server-comment {
+    color: #f03;
+  }
+  span.chat-userid {
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div id="comment-panel"></div>
+<script language="javascript" type="text/javascript">
+const commentPanel = document.getElementById('comment-panel');
+/* ※必須※（中身は書き換え自由）
+ * NCV本体から呼ばれるコメント追加処理
+ * comment.html で指定された各項目が置換されて丸ごとコメント一つ分のhtmlタグとして渡される
+ */
+function addNewComment(comment) {
+  document.getElementById('comment-panel').insertAdjacentHTML('beforeend', comment);
+}
+
+/* NCV本体から呼ばれるユーザーアイコンを追加する処理
+ * ユーザーアイコンを表示したい場合は必須です
+ */
+var userIconMap = new Map();
+function addUserIcon(userId, image) {
+  userIconMap.set(userId, image);
+  // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
+  let chatElm = commentPanel.getElementsByClassName('chat');
+  const len = Math.max(chatElm.length - 50,0);
+  for(let i = chatElm.length - 1; i >= len; i--) {
+    if (chatElm[i].dataset.anon === "1") { continue; }
+    if (userId !== chatElm[i].getElementsByClassName('chat-userid')[0].textContent) { continue; }
+    const iconElm = chatElm[i].getElementsByClassName('chat-usericon');
+    if (iconElm.length === 0) { break; }
+    const elm = getImageElement(image);
+    iconElm[0].appendChild(elm);
+  }
+}
+
+/* NCV本体から呼ばれるギフト画像を追加する処理
+ * ギフト画像を表示したい場合は必須です
+ */
+var giftImageMap = new Map();
+function addGiftImage(giftId, image) {
+  giftImageMap.set(giftId, image);
+  // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
+  let chatElm = commentPanel.getElementsByClassName('chat');
+  const len = Math.max(chatElm.length - 50,0);
+  for(let i = chatElm.length - 1; i >= len; i--) {
+    if (!chatElm[i].dataset.gift) { continue; }
+    if (giftId !== chatElm[i].dataset.gift) { continue; }
+    let elm = getGiftImageElement(image);
+    chatElm[i].getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
+  }
+}
+
+// base64画像タグ生成
+function getImageElement(image) {
+  const elm = document.createElement('img');
+  elm.src = 'data:image/jpeg;base64,' + image;
+  //elm.alt = '代替テキスト';
+  //elm.width = 24;
+  //elm.height = 24;
+  return elm;
+}
+
+// ギフト画像挿入用タグ生成
+function getGiftImageElement(image) {
+  let elm = document.createElement('div');
+  elm.classList.add("gift-image");
+  const giftElm = getImageElement(image);
+  elm.appendChild(giftElm);
+  return elm;
+}
+
+// 最下部へ移動
+function scrollBottom() {
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+// 最下部スクロールボタンが表示されているか判定
+function isDownButtonVisible() {
+  return document.getElementById("indicator") !== null;
+}
+
+// 新しくコメントが追加された後に発生するイベント
+const mo = new MutationObserver(function() {
+  if (!isDownButtonVisible()) {
+    scrollBottom();
+  }
+  const newComment = commentPanel.lastElementChild;
+  if (!newComment.dataset.anon) {
+    const iconElm = newComment.getElementsByClassName('chat-usericon');
+    if(iconElm.length > 0) {
+      const userIdElm = newComment.getElementsByClassName('chat-userid');
+      if(userIdElm.length > 0) {
+        const image = userIconMap.get(userIdElm[0].textContent);
+        if(image) {
+          const elm = getImageElement(image);
+          iconElm[0].appendChild(elm);
+        }
+      }
+    }
+  }
+  if (newComment.dataset.premium) {
+    let elm = document.createElement('span');
+    elm.classList.add("premium");
+    elm.textContent = "P";
+    newComment.getElementsByClassName('chat-nickname')[0].insertAdjacentElement('afterbegin', elm);
+  }
+  if (newComment.dataset.server) {
+    newComment.querySelector('.chat-comment').classList.add('server-comment');
+  }
+  if (newComment.dataset.emotion) {
+    let elm = document.createElement('div');
+    elm.classList.add("emotion");
+    newComment.getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
+  }
+  if (newComment.dataset.gift) {
+    const image = giftImageMap.get(newComment.dataset.gift);
+    if(image) {
+      let elm = getGiftImageElement(image);
+      newComment.getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
+    }
+  }
+});
+mo.observe(commentPanel, { childList: true });
+
+// 最下部へのスクロールボタン生成
+const btn = document.createElement('button');
+btn.id = "indicator";
+btn.type = "button";
+btn.ariaLabel = "最新コメントに戻る";
+btn.onclick = scrollBottom;
+
+// 最下部スクロールボタンを表示させるか判定して表示状態を切り替える
+function downButtonState() {
+  const lastComment = commentPanel.lastElementChild;
+  const rect = lastComment.getBoundingClientRect();
+  const isDisplay = 0 < rect.bottom && rect.top < window.innerHeight;
+  if (isDisplay) {
+    if (isDownButtonVisible()) { btn.remove(); }
+  }
+  else {
+    if (!isDownButtonVisible()) { commentPanel.after(btn); }
+  }
+};
+
+// スクロールが行われたときに発生するイベント
+let ticking = false;
+document.addEventListener("scroll", (event) => {
+  if (!ticking) {
+    window.requestAnimationFrame(() => {
+      downButtonState();
+      ticking = false;
+    });
+    ticking = true;
+  }
+});
+</script>
+</body>
+</html>
