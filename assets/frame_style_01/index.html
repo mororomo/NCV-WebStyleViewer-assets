@@ -128,7 +128,11 @@ function addNewComment(comment) {
  */
 var userIconMap = new Map();
 function addUserIcon(userId, image) {
-  userIconMap.set(userId, image);
+  const imgElm = document.createElement('img');
+  imgElm.src = 'data:image/jpeg;base64,' + image;
+  imgElm.width = '24';
+  imgElm.height = '24';
+  userIconMap.set(userId, imgElm.outerHTML);
   // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
   let chatElm = commentPanel.getElementsByClassName('chat');
   const len = Math.max(chatElm.length - 50,0);
@@ -137,8 +141,7 @@ function addUserIcon(userId, image) {
     if (userId !== chatElm[i].getElementsByClassName('chat-userid')[0].textContent) { continue; }
     const iconElm = chatElm[i].getElementsByClassName('chat-usericon');
     if (iconElm.length === 0) { break; }
-    const elm = getImageElement(image);
-    iconElm[0].appendChild(elm);
+    iconElm[0].appendChild(imgElm);
   }
 }
 
@@ -147,35 +150,22 @@ function addUserIcon(userId, image) {
  */
 var giftImageMap = new Map();
 function addGiftImage(giftId, image) {
-  giftImageMap.set(giftId, image);
+  const imgElm = document.createElement('div');
+  imgElm.classList.add("gift-image");
+  const elm = document.createElement('img');
+  elm.src = 'data:image/png;base64,' + image;
+  imgElm.width = '48';
+  imgElm.height = '48';
+  imgElm.appendChild(elm);
+  giftImageMap.set(giftId, imgElm.outerHTML);
   // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
   let chatElm = commentPanel.getElementsByClassName('chat');
   const len = Math.max(chatElm.length - 50,0);
   for(let i = chatElm.length - 1; i >= len; i--) {
     if (!chatElm[i].dataset.gift) { continue; }
     if (giftId !== chatElm[i].dataset.gift) { continue; }
-    let elm = getGiftImageElement(image);
-    chatElm[i].getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
+    chatElm[i].getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', imgElm);
   }
-}
-
-// base64画像タグ生成
-function getImageElement(image) {
-  const elm = document.createElement('img');
-  elm.src = 'data:image/jpeg;base64,' + image;
-  //elm.alt = '代替テキスト';
-  //elm.width = 24;
-  //elm.height = 24;
-  return elm;
-}
-
-// ギフト画像挿入用タグ生成
-function getGiftImageElement(image) {
-  let elm = document.createElement('div');
-  elm.classList.add("gift-image");
-  const giftElm = getImageElement(image);
-  elm.appendChild(giftElm);
-  return elm;
 }
 
 // 最下部へ移動
@@ -199,10 +189,9 @@ const mo = new MutationObserver(function() {
     if(iconElm.length > 0) {
       const userIdElm = newComment.getElementsByClassName('chat-userid');
       if(userIdElm.length > 0) {
-        const image = userIconMap.get(userIdElm[0].textContent);
-        if(image) {
-          const elm = getImageElement(image);
-          iconElm[0].appendChild(elm);
+        const imgElm = userIconMap.get(userIdElm[0].textContent);
+        if (imgElm) {
+          iconElm[0].insertAdjacentHTML('afterbegin', imgElm);
         }
       }
     }
@@ -222,10 +211,9 @@ const mo = new MutationObserver(function() {
     newComment.getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
   }
   if (newComment.dataset.gift) {
-    const image = giftImageMap.get(newComment.dataset.gift);
-    if(image) {
-      let elm = getGiftImageElement(image);
-      newComment.getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
+    const imgElm = giftImageMap.get(newComment.dataset.gift);
+    if (imgElm) {
+      newComment.getElementsByClassName('chat-comment')[0].insertAdjacentHTML('afterbegin', imgElm);
     }
   }
 });
