@@ -2,7 +2,7 @@
 ニコニコ生放送専用コメントビューア [**NCV** (NiconamaCommentViewer)](https://www.posite-c.com/application/ncv/) で WebStyleViewer 利用時に適用されるHTML素材です。  
 WebStyleViewer は HTML、CSS、JavaScript などで見た目や動作処理を自由にカスタマイズ可能な **NCV** の新しい表示機能です。
 
-コメントを新規受信する毎にベースとなる index.html へコメント一つ分の表示データを反映した comment.html 内のタグを渡していきます。  
+コメントを新規受信する毎にベースとなる index.html へコメント一つ分の表示データを反映した comment.html 内のHTMLタグを渡していきます。  
 最低限コメントを渡すための関数を用意すればその関数の中身も含めすべての処理を利用者側で自由に書くことができるため、これまではできなかったグラフィカルな描画やアニメーションなど多彩な表示方法が実現できます。  
 
 ※ ベータ版のため細かい仕様が変わる可能性があります。
@@ -52,7 +52,7 @@ function addNewComment(comment) {
 ```
 
 `addNewComment()` はコメント追加用の関数で、新規コメント受信の度にNCV本体から呼ばれるため必須です。中身の処理は行いたい演出に応じて自由に書き換えてください。  
-引数は comment.html に記載されたテンプレートタグにコメントデータを反映させたhtmlタグです。  
+引数は comment.html に記載されたテンプレートタグにコメントデータを反映させたHTMLタグです。  
 ```js
 function addNewComment(comment) {
   document.getElementById('comment-panel').insertAdjacentHTML('beforeend', comment);
@@ -116,7 +116,7 @@ function addGiftImage(giftId, image) {
     let elm = document.createElement('div');
     elm.classList.add("gift-image");
     const giftElm = document.createElement('img');
-    giftElm.src = 'data:image/jpeg;base64,' + image;
+    giftElm.src = 'data:image/png;base64,' + image;
     elm.appendChild(giftElm);
     chatElm[i].getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
   }
