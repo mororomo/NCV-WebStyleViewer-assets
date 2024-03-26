@@ -52,13 +52,11 @@
   .chat-usericon {
     height: 24px;
     min-width: 28px;
+    padding-left: 4px;
     width: 28px;
   }
   .chat-usericon img {
     border-radius: 50%;
-    height: 24px;
-    padding-left: 4px;
-    width: 24px;
   }
   .chat-comment {
     padding-left: 4px;
@@ -74,16 +72,15 @@
   .gift-image {
     background-size: cover;
     float: left;
+    margin-right: 4px;
     width: 48px;
-  }
-  .gift-image img {
-    height: auto;
-    max-width: 100%;
   }
   .chat-nickname {
     font-size: .7em;
+    min-width: 80px;
+    overflow-wrap: anywhere;
     padding-left: 4px;
-    width: 100px;
+    width: 80px;
   }
   .premium {
     color: goldenrod;
@@ -117,6 +114,7 @@ var userIconMap = new Map();
 function addUserIcon(userId, image) {
   const imgElm = document.createElement('img');
   imgElm.src = 'data:image/jpeg;base64,' + image;
+  imgElm.decoding = 'async';
   imgElm.width = '24';
   imgElm.height = '24';
   userIconMap.set(userId, imgElm.outerHTML);
@@ -137,21 +135,22 @@ function addUserIcon(userId, image) {
  */
 var giftImageMap = new Map();
 function addGiftImage(giftId, image) {
-  const imgElm = document.createElement('div');
-  imgElm.classList.add("gift-image");
-  const elm = document.createElement('img');
-  elm.src = 'data:image/png;base64,' + image;
+  const divElm = document.createElement('div');
+  divElm.classList.add("gift-image");
+  const imgElm = document.createElement('img');
+  imgElm.src = 'data:image/png;base64,' + image;
+  imgElm.decoding = 'async';
   imgElm.width = '48';
   imgElm.height = '48';
-  imgElm.appendChild(elm);
-  giftImageMap.set(giftId, imgElm.outerHTML);
+  divElm.appendChild(imgElm);
+  giftImageMap.set(giftId, divElm.outerHTML);
   // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
   let chatElm = commentPanel.getElementsByClassName('chat');
   const len = Math.max(chatElm.length - 50,0);
   for(let i = chatElm.length - 1; i >= len; i--) {
     if (!chatElm[i].dataset.gift) { continue; }
     if (giftId !== chatElm[i].dataset.gift) { continue; }
-    chatElm[i].getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', imgElm);
+    chatElm[i].getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', divElm);
   }
 }
 
