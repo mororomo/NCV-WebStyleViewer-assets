@@ -146,8 +146,9 @@ WebStyleViewer を開いたときや番組切り替え時、初期化のタイ�
 |&PREMIUM|␣data-premium="1"|プレミアムアカウント|
 |&SERVERCOMMENT|␣data-server="1"|運営コメント|
 |&EMOTION|␣data-emotion="1"|エモーション|
-|&NICOAD|␣data-nicoad="1"|ニコニ広告 (0.221.2.101 以降)|
-|&GIFT|␣data-gift="<gift_id>"|ギフト (0.221.2.101 以降)|
+|&MAIL|␣data-mail="＜command＞"|コマンド (0.221.2.117 以降)|
+|&NICOAD|␣data-nicoad="1"|ニコニ広告通知 (0.221.2.101 以降)|
+|&GIFT|␣data-gift="＜gift_id＞"|ギフト通知 (0.221.2.101 以降)|
 
 これらの情報はカスタムデータ属性として変換されるので、要素の定義内に配置してJavaScript等で処理を行ない描画に反映させてください。 
 > [!NOTE]
