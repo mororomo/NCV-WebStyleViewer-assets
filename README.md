@@ -3,7 +3,7 @@
 WebStyleViewer は HTML、CSS、JavaScript などで見た目や動作処理を自由にカスタマイズ可能な **NCV** の新しい表示機能です。  
 最低限コメントを渡すための関数を用意すればその関数の中身も含めすべての処理を利用者側で自由に書くことができ、グラフィカルな描画やアニメーションなど多彩な表示方法が実現できます。
 ## 使用例
-![使用例](./images/readme_header_preview.png)
+![使用例](./images/readme_preview.png)
 ## 利用方法　カスタム設定変更手順
 1. 設定フォルダを用意して必要なファイルを揃える  
 　設定フォルダはインストールフォルダ直下にある webStyleAssets フォルダか、またはアプリケーション設定保存フォルダ内に WebStyleAssets という名前のフォルダを作成してその中に配置してください。  
@@ -13,6 +13,7 @@ WebStyleViewer は HTML、CSS、JavaScript などで見た目や動作処理を�
 　設定フォルダ一覧が取得されるのはオプションウィンドウを開いたときなのでNCVは起動したまま作業しても大丈夫です。
 3. 「ツール → WebStyleViewer」を起動する  
 　番組に接続する度にその時点で選択されている設定が読み込まれるので WebStyleViewer を開いたままでも次の接続時に新しい設定が読み込まれます。
+![カスタム設定変更手順](./images/readme_setting.png)
 ***
 ## 構成
 [assets](./assets) 以下、各設定をディレクトリ単位で管理します。  
@@ -76,18 +77,10 @@ function addNewComment(comment) {
 var userIconMap = new Map();
 function addUserIcon(userId, image) {
   userIconMap.set(userId, image);
-  // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
-  let chatElm = commentPanel.getElementsByClassName('chat');
-  const len = Math.max(chatElm.length - 50,0);
-  for(let i = chatElm.length - 1; i >= len; i--) {
-    if (chatElm[i].dataset.anon === "1") { continue; }
-    if (userId !== chatElm[i].getElementsByClassName('chat-userid')[0].textContent) { continue; }
-    const iconElm = chatElm[i].getElementsByClassName('chat-usericon');
-    if (iconElm.length === 0) { break; }
-    const elm = document.createElement('img');
-    elm.src = 'data:image/jpeg;base64,' + image;
-    iconElm[0].appendChild(elm);
-  }
+  // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する必要あり
+  　　　・
+  　　　・
+  　　　・
 }
 ```
 以後新規取得コメントへはユーザーIDを判別したのち適宜ユーザーアイコンの表示を行なってください。
@@ -103,19 +96,10 @@ index.html 内に `addGiftImage()` 関数の存在が確認されたときのみ
 var giftImageMap = new Map();
 function addGiftImage(giftId, image) {
   giftImageMap.set(giftId, image);
-  // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
-  let chatElm = commentPanel.getElementsByClassName('chat');
-  const len = Math.max(chatElm.length - 50,0);
-  for(let i = chatElm.length - 1; i >= len; i--) {
-    if (!chatElm[i].dataset.gift) { continue; }
-    if (giftId !== chatElm[i].dataset.gift) { continue; }
-    let elm = document.createElement('div');
-    elm.classList.add("gift-image");
-    const giftElm = document.createElement('img');
-    giftElm.src = 'data:image/png;base64,' + image;
-    elm.appendChild(giftElm);
-    chatElm[i].getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
-  }
+  // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する必要あり
+  　　　・
+  　　　・
+  　　　・
 }
 ```
 以後新規取得コメントへはギフトIDを判別したのち適宜ギフト画像の表示を行なってください。
