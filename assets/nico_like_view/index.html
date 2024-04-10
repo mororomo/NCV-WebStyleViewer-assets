@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NCV WebStyleViewr</title>
+<style>
+  body {
+    background-color: black;
+    margin: 0;
+    overflow: hidden;
+  }
+  #comment-panel {
+	  height: 100%;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+<div id="comment-panel">
+<canvas>エラー：描画できません。</canvas>
+</div>
+<script language="javascript" type="text/javascript">
+const canvas = document.getElementById('comment-panel').querySelector('canvas');
+const ctx = canvas.getContext('2d');
+let isDrawing;
+let rowsEndPositionArray;
+let chatArray = new Array();
+const offsetHeight = 4;
+const normalFont = 'bold 26px Arial';
+const infomationFont = 'bold 14px Arial';
+const normalTextHeight = getTextHeight(normalFont);
+const infomationTextHeight = getTextHeight(infomationFont);
+const normalTextColor = '#FFFFFF';
+const textColorMap = new Map([['red', 'red'], ['pink', 'pink'], ['orange', 'orange'], ['yellow', 'yellow'], ['green', 'green'], ['cyan', 'cyan'], ['blue', 'blue'], ['purple', 'purple'], ['black', 'black'],
+                              ['white2', 'darkkhaki'], ['red2', 'firebrick'], ['pink2', 'deeppink'], ['orange2', 'tomato'], ['yellow2', 'olive'], ['green2', 'mediumseagreen'], ['cyan2', 'darkcyan'],
+                              ['blue2', 'dodgerblue'], ['purple2', 'indigo'], ['black2', 'dimgray']]);
+const strokeTextColor = '#999999';
+const strokeDrawingThresholdHex = 0x555555;
+
+initRowsEndPositionArray();
+resizeCanvas();
+
+function getTextHeight(font) {
+  ctx.font = font;
+  const textInfo = ctx.measureText('▐');
+  return textInfo.fontBoundingBoxAscent + textInfo.fontBoundingBoxDescent;
+}
+
+function getRowCount() {
+  return Math.floor((canvas.height - offsetHeight * 2) / normalTextHeight);
+}
+
+function initRowsEndPositionArray() {
+  rowsEndPositionArray = new Array(getRowCount());
+  rowsEndPositionArray.fill(0);
+}
+
+function resizeCanvas() {
+  canvas.style.width = document.documentElement.clientWidth + 'px';
+  canvas.style.height = document.documentElement.clientHeight + 'px';
+  canvas.width = document.documentElement.clientWidth * window.devicePixelRatio;
+  canvas.height = document.documentElement.clientHeight * window.devicePixelRatio;
+  ctx.font = normalFont;
+  ctx.lineWidth = 2;
+  //ctx.miterLimit = 2;
+  ctx.strokeStyle = strokeTextColor;
+  if (rowsEndPositionArray) {
+    const rowCount = getRowCount();
+    if (rowsEndPositionArray.length > rowCount) {
+      rowsEndPositionArray.length -= (rowsEndPositionArray.length - rowCount);
+    }
+    else if (rowsEndPositionArray.length < rowCount) {
+      for (let i = rowsEndPositionArray.length; i < rowCount; i++) {
+        rowsEndPositionArray.push(0);
+      }
+    }
+  }
+}
+window.addEventListener('resize', resizeCanvas);
+
+function addNewComment(commentElm) {
+  const elm = document.createElement('div');
+  elm.insertAdjacentHTML('afterbegin', commentElm);
+  const dataElm = elm.firstElementChild;
+  let color = normalTextColor;
+  let isDrawStroke = false;
+  if (dataElm.dataset.mail) {
+    const commands = dataElm.dataset.mail.split(' ');
+    commands.forEach(function(command) {
+      if (textColorMap.has(command)) {
+        color = textColorMap.get(command);
+        if (color === 'black' || color === 'dimgray') {
+          isDrawStroke = true;
+        }
+      }
+      else if (command.startsWith('#')) {
+        color = command;
+        const colorHex = '0x' + color.slice(1);
+        if (colorHex < strokeDrawingThresholdHex) {
+          isDrawStroke = true;
+        }
+      }
+    });
+  }
+  let content = elm.textContent;
+  let font;
+  let textHeight;
+  let isInfomation;
+  if (dataElm.dataset.server && (dataElm.dataset.nicoad || content.startsWith('/'))) {
+    font = infomationFont;
+    textHeight = infomationTextHeight;
+    isInfomation = true;
+    if (content.startsWith('/info ')) {
+      const infoArray = content.split(' ');
+      content = infoArray.slice(2);
+    }
+  }
+  else {
+    font = normalFont;
+    textHeight = normalTextHeight;
+    isInfomation = false;
+  }
+  ctx.font = font;
+  const textInfo = ctx.measureText(content);
+  //const textHeight = textInfo.fontBoundingBoxAscent + textInfo.fontBoundingBoxDescent;
+  const chat = {
+    content: content,
+    font: font,
+    fontColor: color,
+    height: textHeight,
+    isAlive: true,
+    isDrawStroke: isDrawStroke,
+    isInfomation: isInfomation,
+    positionX: 0,
+    positionY: 0,
+    rowIndex: 0,
+    startTime: window.performance.now(),
+    width: textInfo.width
+  };
+  chatArray.push(chat);
+  if (!isDrawing) {
+    isDrawing = true;
+    update();
+  }
+}
+
+function update() {
+  if (chatArray.length === 0) {
+    isDrawing = false;
+    return;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();
+
+  chatArray.forEach(function(chat) {
+    ctx.fillStyle = chat.fontColor;
+    ctx.font = chat.font;
+    if (chat.isInfomation) {
+      chat.positionX = canvas.width - Math.floor((window.performance.now() - chat.startTime) * (canvas.width / 5000));
+      if (chat.positionY === 0) {
+        /*for (let i = 0; i < rowsEndPositionArray.length; i++) {
+          if (rowsEndPositionArray[i] > chat.positionX) { continue; }
+          chat.rowIndex = i;
+          break;
+        }*/
+        chat.positionY = canvas.height - chat.height;
+      }
+      //else
+      //  chat.rowIndex = getLatestRowIndex(chat.rowIndex);
+      //rowsEndPositionArray[chat.rowIndex] = chat.positionX + chat.width;
+    }
+    else {
+      chat.positionX = canvas.width - Math.floor((window.performance.now() - chat.startTime) * ((canvas.width + chat.width) / 4000));
+      if (chat.positionY === 0) {
+        for (let i = 0; i < rowsEndPositionArray.length; i++) {
+          if (rowsEndPositionArray[i] > chat.positionX) { continue; }
+          chat.rowIndex = i;
+          break;
+        }
+        chat.positionY = chat.rowIndex * chat.height + chat.height + offsetHeight;
+      }
+      else
+        chat.rowIndex = getLatestRowIndex(chat.rowIndex);
+      rowsEndPositionArray[chat.rowIndex] = chat.positionX + chat.width;
+      if (chat.isDrawStroke) {
+        ctx.strokeText(chat.content, chat.positionX, chat.positionY);
+      }
+    }
+    ctx.fillText(chat.content, chat.positionX, chat.positionY);
+    if (chat.positionX < -chat.width) {
+      chat.isAlive = false;
+    }
+  });
+  chatArray = chatArray.filter((chat) => chat.isAlive);
+
+  requestAnimationFrame(update);
+}
+
+function getLatestRowIndex(i) {
+  if (i >= rowsEndPositionArray.length) {
+    i -= rowsEndPositionArray.length;
+    i = getLatestRowIndex(i);
+  }
+  return i;
+}
+</script>
+</body>
+</html>
