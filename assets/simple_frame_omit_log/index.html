@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NCV WebStyleViewr</title>
+<style>
+  body {
+    background-color: whitesmoke;
+    margin: 0;
+    overflow: hidden;
+  }
+  #comment-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100vh;
+    margin: 0 8px;
+  }
+  .chat {
+    background-color: white;
+    border: solid 1px gainsboro;
+    border-radius: 4px;
+    display: flex;
+    margin: 0 0 6px;
+    opacity: 0;
+  }
+  .chat span {
+    display: inline-block;
+    margin: auto 0;
+  }
+  .chat-right {
+    padding: 0 4px;
+  }
+  .chat-number {
+    font-size: .5em;
+  }
+  .chat-elapsedtime {
+    font-size: .7em;
+    padding-left: 8px;
+  }
+  .chat-usericon {
+    margin: auto 0;
+    max-height: 24px;
+    min-width: 26px;
+    padding-left: 2px;
+    width: 26px;
+  }
+  .chat-usericon img {
+    border-radius: 50%;
+  }
+  .chat-comment {
+    width: 100%;
+  }
+  .emotion {
+    background-image: url(./img/emotion.png);
+    background-size: cover;
+    float: left;
+    height: 20px;
+    width: 20px;
+  }
+  .gift-image {
+    background-size: cover;
+    float: left;
+    margin-right: 4px;
+    width: 48px;
+  }
+  .chat-nickname {
+    font-size: .7em;
+    padding-left: 8px;
+  }
+  .premium {
+    color: goldenrod;
+    font-weight: bold;
+    padding-right: 4px;
+  }
+  .server-comment {
+    color: #f03;
+  }
+  span.chat-userid {
+    display: none;
+  }
+  #grad-mask {
+    background: linear-gradient(whitesmoke, rgba(0, 0, 0, 0));
+    height: 50px;
+    left: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+<div id="comment-panel"></div>
+<div id="grad-mask"></div>
+<script language="javascript" type="text/javascript">
+const commentPanel = document.getElementById('comment-panel');
+/* ※必須※（中身は書き換え自由）
+ * NCV本体から呼ばれるコメント追加処理
+ * comment.html で指定された各項目が置換されて丸ごとコメント一つ分のhtmlタグとして渡される
+ */
+function addNewComment(comment) {
+  commentPanel.insertAdjacentHTML('beforeend', comment);
+}
+
+/* NCV本体から呼ばれるユーザーアイコンを追加する処理
+ * ユーザーアイコンを表示したい場合は必須です
+ */
+var userIconMap = new Map();
+function addUserIcon(userId, image) {
+  const imgElm = document.createElement('img');
+  imgElm.src = 'data:image/jpeg;base64,' + image;
+  imgElm.decoding = 'async';
+  imgElm.width = '24';
+  imgElm.height = '24';
+  userIconMap.set(userId, imgElm.outerHTML);
+  // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
+  let chatElm = commentPanel.getElementsByClassName('chat');
+  const len = Math.max(chatElm.length - 50,0);
+  for(let i = chatElm.length - 1; i >= len; i--) {
+    if (chatElm[i].dataset.anon === "1") { continue; }
+    if (userId !== chatElm[i].getElementsByClassName('chat-userid')[0].textContent) { continue; }
+    const iconElm = chatElm[i].getElementsByClassName('chat-usericon');
+    if (iconElm.length === 0) { break; }
+    iconElm[0].appendChild(imgElm);
+  }
+}
+
+/* NCV本体から呼ばれるギフト画像を追加する処理
+ * ギフト画像を表示したい場合は必須です
+ */
+var giftImageMap = new Map();
+function addGiftImage(giftId, image) {
+  const divElm = document.createElement('div');
+  divElm.classList.add('gift-image');
+  const imgElm = document.createElement('img');
+  imgElm.src = 'data:image/png;base64,' + image;
+  imgElm.decoding = 'async';
+  imgElm.width = '48';
+  imgElm.height = '48';
+  divElm.appendChild(imgElm);
+  giftImageMap.set(giftId, divElm.outerHTML);
+  // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する
+  let chatElm = commentPanel.getElementsByClassName('chat');
+  const len = Math.max(chatElm.length - 50,0);
+  for(let i = chatElm.length - 1; i >= len; i--) {
+    if (!chatElm[i].dataset.gift) { continue; }
+    if (giftId !== chatElm[i].dataset.gift) { continue; }
+    chatElm[i].getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', divElm);
+  }
+}
+
+function removeOutOfAreaComment() {
+  if (commentPanel.childElementCount <= 1) {
+    return;
+  }
+  //if (document.documentElement.clientHeight < document.documentElement.offsetHeight) {
+  const elm = commentPanel.firstElementChild;
+  if (elm.getBoundingClientRect().top < -elm.clientHeight) {
+    elm.remove();
+    removeOutOfAreaComment();
+  }
+}
+
+// 新しくコメントが追加された後に発生するイベント
+const mo = new MutationObserver(function(mutationList) {
+  if (mutationList[0].removedNodes.length > 0) {
+    return;
+  }
+  const newComment = commentPanel.lastElementChild;
+
+  const chats = document.querySelectorAll('.chat');
+  const movementHeight = newComment.clientHeight + 8;
+  chats.forEach(chat => {
+    chat.style.transform = `translateY(${movementHeight}px)`;
+    chat.style.transition = 'transform 0s';
+  });
+  setTimeout(()=>{
+    chats.forEach(chat => {
+      chat.style.transform = 'translateY(0)';
+      chat.style.opacity = 1;
+      chat.style.transition = 'all 1s ease-out';
+    });
+  }, 10);
+
+  if (!newComment.dataset.anon) {
+    const iconElm = newComment.getElementsByClassName('chat-usericon');
+    if(iconElm.length > 0) {
+      const userIdElm = newComment.getElementsByClassName('chat-userid');
+      if(userIdElm.length > 0) {
+        const imgElm = userIconMap.get(userIdElm[0].textContent);
+        if (imgElm) {
+          iconElm[0].insertAdjacentHTML('afterbegin', imgElm);
+        }
+      }
+    }
+  }
+  if (newComment.dataset.premium) {
+    let elm = document.createElement('span');
+    elm.classList.add('premium');
+    elm.textContent = "P";
+    newComment.getElementsByClassName('chat-nickname')[0].insertAdjacentElement('afterbegin', elm);
+  }
+  if (newComment.dataset.server) {
+    newComment.querySelector('.chat-comment').classList.add('server-comment');
+  }
+  if (newComment.dataset.emotion) {
+    let elm = document.createElement('div');
+    elm.classList.add('emotion');
+    newComment.getElementsByClassName('chat-comment')[0].insertAdjacentElement('afterbegin', elm);
+  }
+  if (newComment.dataset.gift) {
+    const imgElm = giftImageMap.get(newComment.dataset.gift);
+    if (imgElm) {
+      newComment.getElementsByClassName('chat-comment')[0].insertAdjacentHTML('afterbegin', imgElm);
+    }
+  }
+  removeOutOfAreaComment();
+});
+mo.observe(commentPanel, { childList: true });
+</script>
+</body>
+</html>
