@@ -104,7 +104,7 @@ const commentPanel = document.getElementById('comment-panel');
  * comment.html で指定された各項目が置換されて丸ごとコメント一つ分のhtmlタグとして渡される
  */
 function addNewComment(comment) {
-  document.getElementById('comment-panel').insertAdjacentHTML('beforeend', comment);
+  commentPanel.insertAdjacentHTML('beforeend', comment);
 }
 
 /* NCV本体から呼ばれるユーザーアイコンを追加する処理
