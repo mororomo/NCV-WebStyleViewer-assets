@@ -68,10 +68,10 @@ NCV本体でのユーザーアイコン表示が有効になっていて、index
 画面上への描画はコメント受信の際にJavaScriptなどで処理して行なってください。  
 NCV本体から画像データが送られるタイミングは WebStyleViewer の初回起動時（画像データを持っている場合）と、接続中の新規画像取得時のみです。  
 
-`addUserIcon()` はユーザーアイコン画像の追加関数であり、新規取得した画像データをNCV本体から渡すため必須となります。  
+`addUserIcon()` はユーザーアイコン画像の追加関数であり、取得した画像データをNCV本体から渡します。  
 第一引数はユーザーID、第二引数はBase64エンコードされたアイコン画像です。  
 ```js
-var userIconMap = new Map();
+const userIconMap = new Map();
 function addUserIcon(userId, image) {
   userIconMap.set(userId, image);
   // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する必要あり
@@ -85,10 +85,10 @@ function addUserIcon(userId, image) {
 index.html 内に `addGiftImage()` 関数の存在が確認されたときのみ取得された画像がBase64エンコードされ、文字列として WebStyleViewer に渡されます。  
 画面上への描画はコメント受信の際にJavaScriptなどで処理して行なってください。  
 
-`addGiftImage()` はギフト画像の追加関数であり、新規取得した画像データをNCV本体から渡すため必須となります。  
+`addGiftImage()` はギフト画像の追加関数であり、取得した画像データをNCV本体から渡します。  
 第一引数はギフトID、第二引数はBase64エンコードされたギフト画像です。  
 ```js
-var giftImageMap = new Map();
+const giftImageMap = new Map();
 function addGiftImage(giftId, image) {
   giftImageMap.set(giftId, image);
   // 画像取得完了よりコメント反映の方が早いので初回登録時は少し遡って適用する必要あり
