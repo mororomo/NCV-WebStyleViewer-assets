@@ -121,7 +121,7 @@ function addNewComment(comment) {
 /* NCV本体から呼ばれるユーザーアイコンを追加する処理
  * ユーザーアイコンを表示したい場合は必須です
  */
-var userIconMap = new Map();
+const userIconMap = new Map();
 function addUserIcon(userId, image) {
   const imgElm = document.createElement('img');
   imgElm.src = 'data:image/jpeg;base64,' + image;
@@ -144,7 +144,7 @@ function addUserIcon(userId, image) {
 /* NCV本体から呼ばれるギフト画像を追加する処理
  * ギフト画像を表示したい場合は必須です
  */
-var giftImageMap = new Map();
+const giftImageMap = new Map();
 function addGiftImage(giftId, image) {
   const divElm = document.createElement('div');
   divElm.classList.add("gift-image");
