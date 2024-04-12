@@ -13,20 +13,24 @@ WebStyleViewer は HTML、CSS、JavaScript などで見た目や動作処理を�
 　設定フォルダ一覧が取得されるのはオプションウィンドウを開いたときなのでNCVは起動したまま作業しても大丈夫です。
 3. 「ツール → WebStyleViewer」を起動する  
 　番組に接続する度にその時点で選択されている設定が読み込まれるので WebStyleViewer を開いたままでも次の接続時に新しい設定が読み込まれます。
+> [!NOTE]
+> ユーザーアイコンが表示可能なスタイル設定でユーザーアイコンを表示するには、NCV本体でのユーザーアイコン表示が有効になっている必要があります。
+
 ![カスタム設定変更手順](./images/readme_setting.png)
 ***
 ## 構成
 [assets](./assets) 以下、各設定をディレクトリ単位で管理します。  
-独自のカスタム設定を使用する場合は、アプリケーション設定保存フォルダ ( `%APPDATA%\posite-c\NiconamaCommentViewer` ) 内に **WebStyleAssets** フォルダを作成し、その中で各設定ごとにフォルダ分けします。  
-> posite-c  
-> └── NiconamaCommentViewer  
-> 　　 ├── CommentLog  
-> 　　 ├── SpeechLexicon  
-> 　　 └── WebStyleAssets  
-> 　　　　　├── Sample01  
-> 　　　　　├── Sample02  
-> 　　　　　└── Sample03
-
+独自のカスタム設定を使用する場合は、アプリケーション設定保存フォルダ ( `%APPDATA%\posite-c\NiconamaCommentViewer` ) 内に **WebStyleAssets** フォルダを作成し、その中で各設定ごとにフォルダ分けします。
+```
+ posite-c  
+ └── NiconamaCommentViewer  
+     ├── CommentLog  
+     ├── SpeechLexicon  
+     └── WebStyleAssets  
+         ├── Sample01  
+         ├── Sample02  
+         └── Sample03
+```
 ## カスタム設定作成規則
 最低限 **index.html** と **comment.html** は必須です。  
 コメントを新規受信する毎にベースとなる index.html へコメント一つ分の表示データを反映した comment.html 内のHTMLタグを渡していきます。
@@ -60,17 +64,11 @@ function addNewComment(comment) {
 }
 ```
 #### ユーザーアイコンを表示する方法
-ユーザーアイコンを表示するにはNCV本体でのユーザーアイコン表示が有効になっている必要があります。  
-そのうえで取得された画像がBase64エンコードされ、文字列として WebStyleViewer に渡されます。  
+NCV本体でのユーザーアイコン表示が有効になっていて、index.html 内に `addUserIcon()` 関数の存在が確認されたときのみ取得された画像がBase64エンコードされ、文字列として WebStyleViewer に渡されます。  
 画面上への描画はコメント受信の際にJavaScriptなどで処理して行なってください。  
-手短にまとめると、
- * NCV本体でユーザーアイコン表示を有効にする
- * index.html にて画像データ蓄積用のオブジェクトを用意して `addUserIcon()` でデータ追加処理を書く
- * 新規コメント受け取り時にオブジェクトをユーザーIDで検索して描画する
+NCV本体から画像データが送られるタイミングは WebStyleViewer の初回起動時（画像データを持っている場合）と、接続中の新規画像取得時のみです。  
 
 `addUserIcon()` はユーザーアイコン画像の追加関数であり、新規取得した画像データをNCV本体から渡すため必須となります。  
-デフォルト設定ではMapオブジェクトへ蓄積していき、新規登録時の適用処理も行なっています。  
-画像の蓄積方法や関数内の処理などは自由に書き換えてください。  
 第一引数はユーザーID、第二引数はBase64エンコードされたアイコン画像です。  
 ```js
 var userIconMap = new Map();
@@ -88,8 +86,6 @@ index.html 内に `addGiftImage()` 関数の存在が確認されたときのみ
 画面上への描画はコメント受信の際にJavaScriptなどで処理して行なってください。  
 
 `addGiftImage()` はギフト画像の追加関数であり、新規取得した画像データをNCV本体から渡すため必須となります。  
-デフォルト設定ではMapオブジェクトへ蓄積していき、新規登録時の適用処理も行なっています。  
-画像の蓄積方法や関数内の処理などは自由に書き換えてください。  
 第一引数はギフトID、第二引数はBase64エンコードされたギフト画像です。  
 ```js
 var giftImageMap = new Map();
