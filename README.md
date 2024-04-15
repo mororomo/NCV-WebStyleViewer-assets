@@ -22,13 +22,15 @@ WebStyleViewer は HTML、CSS、JavaScript などで見た目や動作処理を�
 [assets](./assets) 以下、各設定をディレクトリ単位で管理します。  
 独自のカスタム設定を使用する場合は、アプリケーション設定保存フォルダ ( `%APPDATA%\posite-c\NiconamaCommentViewer` ) 内に **WebStyleAssets** フォルダを作成し、その中で各設定ごとにフォルダ分けします。
 ```
- posite-c  
- └── NiconamaCommentViewer  
-     ├── CommentLog  
-     ├── SpeechLexicon  
-     └── WebStyleAssets  
-         ├── Sample01  
-         ├── Sample02  
+ posite-c
+ └── NiconamaCommentViewer
+     ├── CommentLog
+     ├── SpeechLexicon
+     └── WebStyleAssets
+         ├── Sample01
+         │   ├── index.html
+         │   └── comment.html
+         ├── Sample02
          └── Sample03
 ```
 ## カスタム設定作成規則
