@@ -81,7 +81,7 @@ function addUserIcon(userId, image) {
 }
 ```
 以後新規取得コメントへはユーザーIDを判別したのち適宜ユーザーアイコンの表示を行なってください。
-#### ギフト画像を表示する方法 (0.221.2.101 以降)
+#### ギフト画像を表示する方法
 index.html 内に `addGiftImage()` 関数の存在が確認されたときのみ取得された画像がBase64エンコードされ、文字列として WebStyleViewer に渡されます。  
 画面上への描画はコメント受信の際にJavaScriptなどで処理して行なってください。  
 
@@ -121,9 +121,9 @@ WebStyleViewer を開いたときや番組切り替え時、初期化のタイ�
 |&PREMIUM|␣data-premium="1"|プレミアムアカウント|
 |&SERVERCOMMENT|␣data-server="1"|運営コメント|
 |&EMOTION|␣data-emotion="1"|エモーション|
-|&MAIL|␣data-mail="＜command＞"|コマンド (0.221.2.117 以降)|
-|&NICOAD|␣data-nicoad="1"|ニコニ広告通知 (0.221.2.101 以降)|
-|&GIFT|␣data-gift="＜gift_id＞"|ギフト通知 (0.221.2.101 以降)|
+|&MAIL|␣data-mail="＜command＞"|コマンド|
+|&NICOAD|␣data-nicoad="1"|ニコニ広告通知|
+|&GIFT|␣data-gift="＜gift_id＞"|ギフト通知|
 
 これらの情報はカスタムデータ属性として変換されるので、要素の定義内に配置してJavaScript等で処理を行ない描画に反映させてください。 
 > [!NOTE]
@@ -133,7 +133,7 @@ WebStyleViewer を開いたときや番組切り替え時、初期化のタイ�
 |変数|説明|
 ----|----
 |&NUMBER|コメント番号|
-|&ELAPSEDTIME|経過時間 (0.221.2.101 以降)|
+|&ELAPSEDTIME|経過時間|
 |&USERID|ユーザーID|
 |&NICKNAME|ユーザー設定ニックネーム|
 |&COMMENT|コメント本文|
