@@ -1,5 +1,5 @@
 # NCV-WebStyleViewer-assets
-ニコニコ生放送専用コメントビューア [**NCV** (NiconamaCommentViewer)](https://www.posite-c.com/application/ncv/) で WebStyleViewer 利用時に適用されるHTML素材です。  
+ニコニコ生放送専用コメントビューア [**NCV** (NiconamaCommentViewer)](https://www.posite-c.com/application/ncv/) で WebStyleViewer 利用時に適用されるHTML素材です。（NCVのバージョン 0.221.2.* 以降で利用可能です）  
 WebStyleViewer は HTML、CSS、JavaScript などで見た目や動作処理を自由にカスタマイズ可能な **NCV** の新しい表示機能です。  
 最低限コメントを渡すための関数を用意すればその関数の中身も含めすべての処理を利用者側で自由に書くことができ、グラフィカルな描画やアニメーションなど多彩な表示方法が実現できます。
 ## 使用例
@@ -8,7 +8,7 @@ WebStyleViewer は HTML、CSS、JavaScript などで見た目や動作処理を�
 1. 設定フォルダを用意して必要なファイルを揃える  
 　設定フォルダはインストールフォルダ直下にある webStyleAssets フォルダか、またはアプリケーション設定保存フォルダ内に WebStyleAssets という名前のフォルダを作成してその中に配置してください。  
 　両方に同名の設定フォルダが存在した場合はインストールフォルダ側が優先されます。
-2. NCVを起動して 「オプション... → 全般 → WebStyleViewerで適用するhtml設定」 から任意の設定を選択する  
+2. NCVを起動して 「オプション... → 全般 → WebStyleViewerで適用するスタイル」 から任意の設定を選択する  
 　ここに表示される設定名はインストールフォルダ直下、またはアプリケーション設定保存フォルダ直下の webStyleAssets フォルダ内に存在する各設定フォルダ名です。  
 　設定フォルダ一覧が取得されるのはオプションウィンドウを開いたときなのでNCVは起動したまま作業しても大丈夫です。
 3. 「ツール → WebStyleViewer」を起動する  
